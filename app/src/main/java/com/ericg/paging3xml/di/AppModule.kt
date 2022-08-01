@@ -1,9 +1,12 @@
 package com.ericg.paging3xml.di
 
+import android.app.Application
+import androidx.room.Room
+import com.ericg.paging3xml.data.local.database.RickMortyDatabase
 import com.ericg.paging3xml.data.remote.ApiService
 import com.ericg.paging3xml.data.repositoryimpl.RickMortyRepositoryImpl
 import com.ericg.paging3xml.domain.repository.RickMortyRepository
-import com.ericg.paging3xml.utils.Constants.BASE_URL
+import com.ericg.paging3xml.utils.Constants
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,6 +21,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+
     @Singleton
     @Provides
     fun providesLoggingInterceptor(): HttpLoggingInterceptor {
@@ -40,16 +44,29 @@ object AppModule {
     @Provides
     fun providesAPIService(okHttpClient: OkHttpClient): ApiService {
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(Constants.BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .client(okHttpClient)
             .build()
             .create(ApiService::class.java)
     }
 
+    @Provides
+    @Singleton
+    fun providesRickMortyDatabase(application: Application): RickMortyDatabase {
+        return Room.databaseBuilder(
+            application.applicationContext,
+            RickMortyDatabase::class.java,
+            "RickMortyDB"
+        ).fallbackToDestructiveMigration().build()
+    }
+
     @Singleton
     @Provides
-    fun providesRickMortyRepository(apiService: ApiService): RickMortyRepository {
-        return RickMortyRepositoryImpl(apiService)
+    fun providesRickMortyRepository(
+        apiService: ApiService,
+        database: RickMortyDatabase
+    ): RickMortyRepository {
+        return RickMortyRepositoryImpl(apiService, database)
     }
 }
