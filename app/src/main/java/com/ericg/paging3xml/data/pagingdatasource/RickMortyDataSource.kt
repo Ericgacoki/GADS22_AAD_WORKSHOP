@@ -6,8 +6,10 @@ import com.ericg.paging3xml.data.remote.ApiService
 import com.ericg.paging3xml.domain.model.Character
 import com.ericg.paging3xml.utils.Constants.STARTING_PAGE
 import retrofit2.HttpException
-import timber.log.Timber
 
+/***
+ * [NOTE:] Use this Source when you need online-only mode!
+ */
 class RickMortyDataSource(
     private val apiService: ApiService
 ) : PagingSource<Int, Character>() {
@@ -20,8 +22,6 @@ class RickMortyDataSource(
 
             val response = apiService.getCharacters(page)
             val characters = response.results
-
-            Timber.e("Characters: $characters")
 
             LoadResult.Page(
                 data = characters,
